@@ -1,19 +1,24 @@
 const seenEl = document.querySelector('#lastseen');
 
-function updateSeen() {
-    fetch('seen.json?nocache=' + Math.random().toString().substring(2)).then(r => r.text()).then(r => {
-        let json = JSON.parse(r);
-        if (json.project) {
-            if (json.project_href)
-                // Please no XSS
-                seenEl.innerHTML = `I was last seen working on <a href="${json.project_href}" class="d" target="_blank"
-                style="color:#949494;">${json.project}<span class="underline" style="background-color:#949494;"></span></a>.`;
-            else
-                seenEl.innerText = 'I was last seen working on ' + json.project + '.';
-        } else {
-            seenEl.innerText = "I'm not working on anything right now."
-        }
-    }).catch(console.log);
+// set up a.d and span.underline
+const color = "#949494";
+const aEle = document.createElement("a");
+aEle.classList.add("d");
+aEle.target = "_blank";
+aEle.style.color = color;
+const underlineEle = document.createElement("span");
+underlineEle.classList.add("underline");
+underlineEle.style.backgroundColor = "color";
+            
+async function updateSeen() {
+    seenEle.innerHTML = "";
+    const response = await fetch(`seen.json?nocache=${Math.random().toString().substring(2)}`).catch(console.log);
+    const { project, project_href } = await response.json();
+    if (!project) return seenEl.textContent = "I'm not working on anything right now.";
+    if (!project_href) return seenEl.textContent = `I was last seen working on ${project}.`;
+    aEle.href = project_href;
+    aEle.textContent = project;
+    seenEl.append("I was last seen working on ", aEle, underlineEle);
 }
 
 setInterval(updateSeen, 60 * 1000);
